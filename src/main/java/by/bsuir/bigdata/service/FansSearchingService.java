@@ -63,21 +63,31 @@ public class FansSearchingService {
                 }
             });
 
+            return getStatistics(accountName);
+
+        } catch (IOException e) {
+            throw new FansSearchingException(e);
+        }
+    }
+
+    public Map<String, Integer> getStatistics(String accountName)
+    {
+        try
+        {
             hadoopAggregationService.aggregate(filesDirectory + accountName + "/",
                     filesDirectory + accountName + "/out");
 
             Map<String, Integer> result = new LinkedHashMap<>();
 
-            Files.readAllLines(Files.walk(Paths.get(filesDirectory + accountName + "/out"))
-                    .findFirst().get())
+            Files.readAllLines(Paths.get(filesDirectory + accountName + "/out/part-r-00000"))
                     .stream()
-                    .collect(Collectors.toMap(line -> line.split(" ")[0],
-                            line -> Integer.parseInt(line.split(" ")[1]))).entrySet().stream()
+                    .filter(line -> line.split("\t").length > 1)
+                    .collect(Collectors.toMap(line -> line.split("\t")[0],
+                            line -> Integer.parseInt(line.split("\t")[1]))).entrySet().stream()
                     .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                     .forEachOrdered(x -> result.put(x.getKey(), x.getValue()));
 
             return result;
-
         } catch (IOException e) {
             throw new FansSearchingException(e);
         }
