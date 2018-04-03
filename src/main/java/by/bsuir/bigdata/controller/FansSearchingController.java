@@ -23,4 +23,10 @@ public class FansSearchingController {
     {
         return fansSearchingService.searchFans(accountName);
     }
+
+    @GetMapping(value = "/statistics")
+    public Map<String, Integer> getStatistics(@RequestParam String accountName)
+    {
+        return fansSearchingService.getStatistics(accountName);
+    }
 }
